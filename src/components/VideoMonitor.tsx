@@ -89,6 +89,9 @@ export const VideoMonitor: React.FC<VideoMonitorProps> = ({
                 {isFailed ? 'Erreur' : isPending ? 'En file d’attente' : 'Rendu en cours'}
               </span>
             </div>
+            <p className="text-[11px] text-[#444746] mt-0.5">
+              Génération haute définition en 121 frames @ 24fps
+            </p>
           </div>
         </div>
 

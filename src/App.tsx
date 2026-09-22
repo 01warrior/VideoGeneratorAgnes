@@ -37,15 +37,7 @@ export default function App() {
   });
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
 
-  // 2. Provider State
-  const providers = videoProviderFactory.listProviders();
-  const [selectedProvider, setSelectedProvider] = useState<ProviderKey>(() => {
-    const saved = localStorage.getItem('agnes_selected_provider') as ProviderKey;
-    if (saved && ['agnes', 'mock', 'kling', 'fal'].includes(saved)) return saved;
-    return 'agnes';
-  });
-
-  // 3. Form Parameters
+  // 2. Form Parameters
   const [prompt, setPrompt] = useState<string>(DEFAULT_PROMPT);
   const [imageUrl, setImageUrl] = useState<string>('');
   const [aspectRatio, setAspectRatio] = useState<'16:9' | '9:16' | '1:1'>('16:9');
@@ -85,12 +77,6 @@ export default function App() {
   const handleSaveApiKey = (newKey: string) => {
     setApiKey(newKey);
     localStorage.setItem('agnes_api_key', newKey);
-  };
-
-  // Persist provider
-  const handleSelectProvider = (key: ProviderKey) => {
-    setSelectedProvider(key);
-    localStorage.setItem('agnes_selected_provider', key);
   };
 
   // Cleanup on unmount
@@ -138,8 +124,8 @@ export default function App() {
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
 
-    // Check if key is needed for Agnes AI
-    if (selectedProvider === 'agnes' && !apiKey.trim()) {
+    // Check if key is set
+    if (!apiKey.trim()) {
       setIsKeyModalOpen(true);
       return;
     }
@@ -147,7 +133,7 @@ export default function App() {
     // Stop any existing polling
     pollingServiceRef.current?.stop();
 
-    const providerInstance = videoProviderFactory.getProvider(selectedProvider);
+    const providerInstance = videoProviderFactory.getProvider('agnes');
     const params: VideoGenerationParams = {
       prompt: prompt.trim(),
       imageUrl: imageUrl.trim() || undefined,
@@ -172,7 +158,7 @@ export default function App() {
       const historyRecord: GenerationHistoryItem = {
         id: historyId,
         taskId,
-        provider: selectedProvider,
+        provider: 'agnes',
         params,
         status: 'pending',
         createdAt: Date.now(),
@@ -251,17 +237,14 @@ export default function App() {
       <Header
         apiKey={apiKey}
         onOpenKeyModal={() => setIsKeyModalOpen(true)}
-        selectedProvider={selectedProvider}
-        providers={providers}
-        onSelectProvider={handleSelectProvider}
         historyCount={history.length}
         onOpenHistory={() => setIsHistoryOpen(true)}
       />
 
       {/* 2. Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-8 space-y-6">
-        {/* Missing API Key Guidance Banner if using Agnes and key is missing */}
-        {selectedProvider === 'agnes' && !apiKey && (
+        {/* Missing API Key Guidance Banner */}
+        {!apiKey && (
           <div className="bg-[#fff8f6] rounded-3xl p-4 sm:p-5 border border-[#ffdad6] shadow-xs flex flex-wrap items-center justify-between gap-3 animate-in fade-in">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-[#ffdad6] text-[#ba1a1a] flex items-center justify-center shrink-0">
@@ -269,31 +252,21 @@ export default function App() {
               </div>
               <div>
                 <h3 className="text-sm font-bold text-[#410002]">
-                  Clé API Agnes AI requise pour la génération directe
+                  Clé API Agnes AI requise
                 </h3>
                 <p className="text-xs text-[#444746]">
-                  Renseignez votre clé <code className="font-mono text-[#004a77]">sk-...</code> ou
-                  activez le simulateur Sandbox pour explorer l'interface sans clé.
+                  Renseignez votre clé d'API <code className="font-mono text-[#004a77]">sk-...</code> pour lancer la synthèse vidéo sur le moteur officiel agnes-video-v2.0.
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => handleSelectProvider('mock')}
-                className="px-4 py-2 rounded-full bg-white text-[#00639b] text-xs font-semibold border border-[#e1e3e1] hover:bg-[#c2e7ff]/30 transition-all shadow-xs"
-              >
-                Tester en Sandbox
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsKeyModalOpen(true)}
-                className="px-4 py-2 rounded-full bg-[#00639b] text-white text-xs font-semibold hover:bg-[#004a77] transition-all shadow-xs flex items-center gap-1.5"
-              >
-                <Key className="w-3.5 h-3.5" />
-                <span>Renseigner ma clé</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setIsKeyModalOpen(true)}
+              className="px-5 py-2.5 rounded-full bg-[#00639b] text-white text-xs font-semibold hover:bg-[#004a77] transition-all shadow-xs flex items-center gap-1.5"
+            >
+              <Key className="w-3.5 h-3.5" />
+              <span>Renseigner ma clé API</span>
+            </button>
           </div>
         )}
 
@@ -315,9 +288,6 @@ export default function App() {
               onSelectAspectRatio={setAspectRatio}
               imageUrl={imageUrl}
               onChangeImageUrl={setImageUrl}
-              selectedProvider={selectedProvider}
-              onSelectProvider={handleSelectProvider}
-              providers={providers}
               disabled={isGenerating}
             />
 
@@ -428,8 +398,8 @@ export default function App() {
                   <div className="flex items-start gap-2.5 text-xs text-[#444746]">
                     <CheckCircle2 className="w-4 h-4 text-[#0a6627] shrink-0 mt-0.5" />
                     <span>
-                      <strong className="text-[#1f1f1f]">Pattern Adapter Strict :</strong> Découplage
-                      total permettant d'interchanger Agnes, Kling ou Fal.ai sans impacter l'interface.
+                      <strong className="text-[#1f1f1f]">Résolution Cinématographique :</strong> Formats
+                      16:9 (1152×768), 9:16 (768×1152) et 1:1 optimisés pour la production vidéo.
                     </span>
                   </div>
                   <div className="flex items-start gap-2.5 text-xs text-[#444746]">
@@ -482,7 +452,6 @@ export default function App() {
         apiKey={apiKey}
         onSave={handleSaveApiKey}
         onClose={() => setIsKeyModalOpen(false)}
-        onSelectSandbox={() => handleSelectProvider('mock')}
       />
 
       {/* 4. History Drawer */}

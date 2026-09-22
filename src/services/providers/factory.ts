@@ -1,8 +1,5 @@
 import { IVideoProvider, ProviderKey } from '../../types/video';
 import { AgnesVideoProvider } from './agnes.provider';
-import { KlingVideoProvider } from './kling.provider';
-import { FalVideoProvider } from './fal.provider';
-import { MockVideoProvider } from './mock.provider';
 
 export interface ProviderInfo {
   key: ProviderKey;
@@ -20,9 +17,6 @@ export class VideoProviderFactory {
 
   private constructor() {
     this.registerProvider('agnes', new AgnesVideoProvider());
-    this.registerProvider('mock', new MockVideoProvider());
-    this.registerProvider('kling', new KlingVideoProvider());
-    this.registerProvider('fal', new FalVideoProvider());
   }
 
   public static getInstance(): VideoProviderFactory {
@@ -37,7 +31,7 @@ export class VideoProviderFactory {
   }
 
   public getProvider(key: ProviderKey = 'agnes'): IVideoProvider {
-    const provider = this.providers.get(key);
+    const provider = this.providers.get(key) || this.providers.get('agnes');
     if (!provider) {
       throw new Error(`Aucun fournisseur de vidéo enregistré pour la clé: '${key}'`);
     }
@@ -53,34 +47,7 @@ export class VideoProviderFactory {
         description: 'Moteur vidéo principal : 1152x768 / 768x1152, 121 frames @ 24fps.',
         isReady: true,
         requiresKey: true,
-        badge: 'Actif & Recommandé',
-      },
-      {
-        key: 'mock',
-        name: 'mock',
-        displayName: 'Simulateur Sandbox',
-        description: 'Tester l’UI, le lecteur et le polling sans clé ni consommation de crédits.',
-        isReady: true,
-        requiresKey: false,
-        badge: 'Test Gratuit',
-      },
-      {
-        key: 'kling',
-        name: 'kling',
-        displayName: 'Kling AI (v1.5 / v2.0)',
-        description: 'Architecture prête (Adapter Pattern plug-and-play).',
-        isReady: false,
-        requiresKey: true,
-        badge: 'Adapter Prêt',
-      },
-      {
-        key: 'fal',
-        name: 'fal',
-        displayName: 'Fal.ai (Luma / CogVideo)',
-        description: 'Architecture prête (Adapter Pattern plug-and-play).',
-        isReady: false,
-        requiresKey: true,
-        badge: 'Adapter Prêt',
+        badge: 'Actif & Officiel',
       },
     ];
   }
