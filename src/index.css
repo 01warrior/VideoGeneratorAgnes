@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #f0f4f9;
+    color: #1f1f1f;
+    transition: background-color 0.3s cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  button, input, textarea, select {
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  }
+}
+
+/* Custom scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

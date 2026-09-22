@@ -1,0 +1,6 @@
+{
+  "name": "Agnes AI Video Generator",
+  "description": "Studio moderne de génération vidéo par IA basé sur le modèle agnes-video-v2.0 avec architecture Adapter multi-provider, polling adaptatif et design Material You.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
