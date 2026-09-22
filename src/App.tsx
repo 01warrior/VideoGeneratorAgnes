@@ -120,12 +120,14 @@ export default function App() {
     });
   };
 
-  // Launch Video Generation
-  const handleGenerate = async () => {
+  // Launch Video Generation (supports optional useServerKey flag)
+  const handleGenerate = async (options?: { useServerKey?: boolean }) => {
     if (!prompt.trim()) return;
 
-    // Check if key is set
-    if (!apiKey.trim()) {
+    const useServer = options?.useServerKey === true;
+
+    // Check if key is set (unless user explicitly chose server key test)
+    if (!apiKey.trim() && !useServer) {
       setIsKeyModalOpen(true);
       return;
     }
@@ -133,6 +135,7 @@ export default function App() {
     // Stop any existing polling
     pollingServiceRef.current?.stop();
 
+    const effectiveKey = useServer ? '' : apiKey.trim();
     const providerInstance = videoProviderFactory.getProvider('agnes');
     const params: VideoGenerationParams = {
       prompt: prompt.trim(),
@@ -151,8 +154,8 @@ export default function App() {
     const historyId = 'gen_' + Date.now();
 
     try {
-      // 1. Create task via Provider Adapter
-      const taskId = await providerInstance.createTask(params, apiKey);
+      // 1. Create task via Provider Adapter (server proxy uses AGNES_API_KEY when key is empty)
+      const taskId = await providerInstance.createTask(params, effectiveKey);
       setCurrentTaskId(taskId);
 
       const historyRecord: GenerationHistoryItem = {
@@ -169,7 +172,7 @@ export default function App() {
       const poller = new VideoPollingService(
         taskId,
         providerInstance,
-        apiKey,
+        effectiveKey,
         {
           onStatusUpdate: (result, elapsed) => {
             setTaskStatus(result.status);
@@ -441,7 +444,7 @@ export default function App() {
               {/* Bouton Générer la vidéo pleine largeur en bas */}
               <button
                 type="button"
-                onClick={handleGenerate}
+                onClick={() => handleGenerate()}
                 disabled={isGenerating || !prompt.trim()}
                 className={`w-full py-4 rounded-2xl font-bold text-base tracking-wide shadow-md transition-all flex items-center justify-center gap-2.5 ${
                   isGenerating
@@ -472,6 +475,7 @@ export default function App() {
         apiKey={apiKey}
         onSave={handleSaveApiKey}
         onClose={() => setIsKeyModalOpen(false)}
+        onUseServerKey={() => handleGenerate({ useServerKey: true })}
       />
 
       {/* 4. History Drawer */}

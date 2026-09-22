@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Key, Eye, EyeOff, X, CheckCircle, ShieldAlert, ExternalLink } from 'lucide-react';
+import { Key, Eye, EyeOff, X, CheckCircle, ShieldAlert, ExternalLink, Sparkles } from 'lucide-react';
 
 interface ApiKeyModalProps {
   isOpen: boolean;
   apiKey: string;
   onSave: (key: string) => void;
   onClose: () => void;
+  onUseServerKey?: () => void;
 }
 
 export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
@@ -13,6 +14,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
   apiKey,
   onSave,
   onClose,
+  onUseServerKey,
 }) => {
   const [inputVal, setInputVal] = useState(apiKey);
   const [showPassword, setShowPassword] = useState(false);
@@ -35,6 +37,13 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
     onSave('');
   };
 
+  const handleQuickTest = () => {
+    onClose();
+    if (onUseServerKey) {
+      onUseServerKey();
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
       <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-xl border border-[#e1e3e1] relative">
@@ -54,19 +63,19 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
           <div>
             <h2 className="text-xl font-bold text-[#1f1f1f]">Clé API Agnes AI</h2>
             <p className="text-xs text-[#444746]">
-              Authentification sécurisée pour le modèle agnes-video-v2.0
+              Authentification pour le modèle agnes-video-v2.0
             </p>
           </div>
         </div>
 
         {/* Info card */}
-        <div className="bg-[#f0f4f9] rounded-2xl p-4 mb-5 text-xs text-[#444746] leading-relaxed">
+        <div className="bg-[#f0f4f9] rounded-2xl p-4 mb-4 text-xs text-[#444746] leading-relaxed">
           <p className="mb-2">
-            Votre clé API est transmise sous forme de jeton Bearer (
+            Votre clé personnelle est transmise de façon sécurisée (
             <code className="text-[#004a77] font-mono bg-white px-1.5 py-0.5 rounded">
               Authorization: Bearer sk-...
             </code>
-            ) et sauvegardée uniquement dans le <strong className="text-[#1f1f1f]">localStorage</strong> de votre navigateur.
+            ) et conservée dans votre navigateur.
           </p>
           <div className="flex items-center gap-1.5 text-[#00639b] font-medium">
             <ExternalLink className="w-3.5 h-3.5" />
@@ -81,11 +90,30 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
           </div>
         </div>
 
-        {/* Form */}
+        {/* Option d'accès rapide avec la clé serveur / savadogo */}
+        <div className="mb-5 p-4 rounded-2xl bg-gradient-to-r from-[#d3e3fd]/60 to-[#c2e7ff]/40 border border-[#c2e7ff] flex flex-col gap-2.5">
+          <div className="flex items-start gap-2.5">
+            <Sparkles className="w-4 h-4 text-[#00639b] shrink-0 mt-0.5" />
+            <div className="text-xs text-[#1f1f1f]">
+              <span className="font-semibold text-[#004a77]">Mode Découverte disponible :</span>{' '}
+              Vous pouvez tester l'application directement sans saisir de clé grâce à la clé préconfigurée sur le serveur Vercel.
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleQuickTest}
+            className="w-full py-2.5 px-4 rounded-xl bg-[#00639b] hover:bg-[#004a77] text-white text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-2 active:scale-98"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Tester rapidement avec la clé de savadogo</span>
+          </button>
+        </div>
+
+        {/* Formulaire clé personnalisée */}
         <form onSubmit={handleSave} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-[#1f1f1f] mb-1.5">
-              Clé Secrète (sk-...)
+              Ou utiliser votre propre clé (sk-...)
             </label>
             <div className="relative flex items-center">
               <input
@@ -93,7 +121,6 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
                 value={inputVal}
                 onChange={(e) => setInputVal(e.target.value)}
                 placeholder="sk-agnes-..."
-                autoFocus
                 className="w-full px-4 py-3 rounded-2xl bg-[#f0f4f9] border border-transparent focus:border-[#00639b] focus:bg-white text-sm text-[#1f1f1f] pr-12 focus:outline-none transition-all font-mono"
               />
               <button
@@ -114,13 +141,13 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center justify-between pt-1">
             <button
               type="button"
               onClick={handleClear}
               className="text-xs font-medium text-[#ba1a1a] hover:underline px-2 py-1"
             >
-              Effacer la clé
+              Effacer ma clé
             </button>
             <div className="flex items-center gap-2">
               <button
@@ -132,7 +159,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
               </button>
               <button
                 type="submit"
-                className="px-5 py-2.5 rounded-full bg-[#00639b] text-white text-xs font-semibold hover:bg-[#004a77] shadow-sm transition-all flex items-center gap-1.5"
+                className="px-5 py-2.5 rounded-full bg-[#1f1f1f] text-white text-xs font-semibold hover:bg-black shadow-sm transition-all flex items-center gap-1.5"
               >
                 {savedSuccess ? (
                   <>
@@ -140,7 +167,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
                     Enregistrée !
                   </>
                 ) : (
-                  'Enregistrer'
+                  'Enregistrer ma clé'
                 )}
               </button>
             </div>
