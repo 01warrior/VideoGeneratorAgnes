@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Key, Eye, EyeOff, X, CheckCircle, ShieldAlert, ExternalLink, Sparkles } from 'lucide-react';
+import { Key, Eye, EyeOff, X, CheckCircle, ShieldAlert, ExternalLink } from 'lucide-react';
 
 interface ApiKeyModalProps {
   isOpen: boolean;
@@ -90,21 +90,17 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
           </div>
         </div>
 
-        {/* Option d'accès rapide avec la clé serveur / savadogo */}
+        {/* Option d'accès rapide avec la clé préconfigurée / savadogo */}
         <div className="mb-5 p-4 rounded-2xl bg-gradient-to-r from-[#d3e3fd]/60 to-[#c2e7ff]/40 border border-[#c2e7ff] flex flex-col gap-2.5">
-          <div className="flex items-start gap-2.5">
-            <Sparkles className="w-4 h-4 text-[#00639b] shrink-0 mt-0.5" />
-            <div className="text-xs text-[#1f1f1f]">
-              <span className="font-semibold text-[#004a77]">Mode Découverte disponible :</span>{' '}
-              Vous pouvez tester l'application directement sans saisir de clé grâce à la clé préconfigurée sur le serveur Vercel.
-            </div>
+          <div className="text-xs text-[#1f1f1f]">
+            <span className="font-semibold text-[#004a77]">Mode Découverte disponible :</span>{' '}
+            Vous pouvez tester l'application directement sans saisir de clé grâce à la clé préconfigurée.
           </div>
           <button
             type="button"
             onClick={handleQuickTest}
-            className="w-full py-2.5 px-4 rounded-xl bg-[#00639b] hover:bg-[#004a77] text-white text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-2 active:scale-98"
+            className="w-full py-2.5 px-4 rounded-xl bg-[#00639b] hover:bg-[#004a77] text-white text-xs font-bold shadow-sm transition-all flex items-center justify-center active:scale-98"
           >
-            <Sparkles className="w-3.5 h-3.5" />
             <span>Tester rapidement avec la clé de savadogo</span>
           </button>
         </div>
@@ -141,25 +137,25 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-1">
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
             <button
               type="button"
               onClick={handleClear}
-              className="text-xs font-medium text-[#ba1a1a] hover:underline px-2 py-1"
+              className="text-xs font-medium text-[#ba1a1a] hover:underline px-2 py-1.5 text-center sm:text-left"
             >
               Effacer ma clé
             </button>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-end gap-2 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-full text-xs font-medium text-[#444746] hover:bg-[#f0f4f9] transition-colors"
+                className="flex-1 sm:flex-none px-4 py-2.5 rounded-full text-xs font-medium text-[#444746] hover:bg-[#f0f4f9] transition-colors text-center"
               >
                 Annuler
               </button>
               <button
                 type="submit"
-                className="px-5 py-2.5 rounded-full bg-[#1f1f1f] text-white text-xs font-semibold hover:bg-black shadow-sm transition-all flex items-center gap-1.5"
+                className="flex-1 sm:flex-none px-5 py-2.5 rounded-full bg-[#1f1f1f] text-white text-xs font-semibold hover:bg-black shadow-sm transition-all flex items-center justify-center gap-1.5"
               >
                 {savedSuccess ? (
                   <>
@@ -167,7 +163,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
                     Enregistrée !
                   </>
                 ) : (
-                  'Enregistrer ma clé'
+                  'Enregistrer'
                 )}
               </button>
             </div>
