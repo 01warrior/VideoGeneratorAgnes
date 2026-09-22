@@ -18,6 +18,7 @@ import { PromptComposer } from './components/PromptComposer';
 import { GenerationSettings } from './components/GenerationSettings';
 import { VideoMonitor } from './components/VideoMonitor';
 import { VideoPlayer } from './components/VideoPlayer';
+import { MobileResultBottomSheet } from './components/MobileResultBottomSheet';
 import { HistoryDrawer } from './components/HistoryDrawer';
 import { videoProviderFactory } from './services/providers/factory';
 import { VideoPollingService } from './services/pollingService';
@@ -69,6 +70,7 @@ export default function App() {
     }
   });
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isMobileResultOpen, setIsMobileResultOpen] = useState(false);
 
   // Active polling reference
   const pollingServiceRef = useRef<VideoPollingService | null>(null);
@@ -150,6 +152,7 @@ export default function App() {
     setProgress(undefined);
     setElapsedMs(0);
     setRetryState(null);
+    setIsMobileResultOpen(true);
 
     const historyId = 'gen_' + Date.now();
 
@@ -186,6 +189,7 @@ export default function App() {
             setTaskStatus('completed');
             setVideoResultUrl(videoUrl);
             setGenerationDurationMs(elapsed);
+            setIsMobileResultOpen(true);
             updateHistoryStatus(historyId, 'completed', videoUrl, undefined, elapsed);
           },
           onError: (errorText, elapsed) => {
@@ -225,6 +229,7 @@ export default function App() {
     setTaskStatus('idle');
     setCurrentTaskId(null);
     setRetryState(null);
+    setIsMobileResultOpen(false);
   };
 
   const handleClearHistory = () => {
@@ -298,40 +303,46 @@ export default function App() {
 
           {/* RIGHT COLUMN: Output, Live Monitor & Showcase (Cols 8-12) */}
           <section className="lg:col-span-5 flex flex-col space-y-6">
-            {/* Live Monitoring state */}
+            {/* Live Monitoring state (Desktop uniquement - Mobile géré par le BottomSheet) */}
             {isGenerating && currentTaskId && (
-              <VideoMonitor
-                taskId={currentTaskId}
-                status={taskStatus}
-                elapsedMs={elapsedMs}
-                retryState={retryState}
-                progress={progress}
-                error={errorMessage || undefined}
-                onRetry={handleGenerate}
-                onCancel={handleCancelGeneration}
-              />
+              <div className="hidden lg:block">
+                <VideoMonitor
+                  taskId={currentTaskId}
+                  status={taskStatus}
+                  elapsedMs={elapsedMs}
+                  retryState={retryState}
+                  progress={progress}
+                  error={errorMessage || undefined}
+                  onRetry={handleGenerate}
+                  onCancel={handleCancelGeneration}
+                />
+              </div>
             )}
 
-            {/* Error State Banner */}
+            {/* Error State Banner (Desktop uniquement - Mobile géré par le BottomSheet) */}
             {taskStatus === 'failed' && currentTaskId && (
-              <VideoMonitor
-                taskId={currentTaskId}
-                status="failed"
-                elapsedMs={elapsedMs}
-                error={errorMessage || undefined}
-                onRetry={handleGenerate}
-                onCancel={handleCancelGeneration}
-              />
+              <div className="hidden lg:block">
+                <VideoMonitor
+                  taskId={currentTaskId}
+                  status="failed"
+                  elapsedMs={elapsedMs}
+                  error={errorMessage || undefined}
+                  onRetry={handleGenerate}
+                  onCancel={handleCancelGeneration}
+                />
+              </div>
             )}
 
-            {/* Completed HTML5 Video Player */}
+            {/* Completed HTML5 Video Player (Desktop uniquement - Mobile géré par le BottomSheet) */}
             {taskStatus === 'completed' && videoResultUrl && (
-              <VideoPlayer
-                videoUrl={videoResultUrl}
-                prompt={prompt}
-                durationMs={generationDurationMs || elapsedMs}
-                aspectRatio={aspectRatio}
-              />
+              <div className="hidden lg:block">
+                <VideoPlayer
+                  videoUrl={videoResultUrl}
+                  prompt={prompt}
+                  durationMs={generationDurationMs || elapsedMs}
+                  aspectRatio={aspectRatio}
+                />
+              </div>
             )}
 
             {/* Idle Welcome / Showcase Card */}
@@ -401,6 +412,7 @@ export default function App() {
                         setTaskStatus('completed');
                         setPrompt(history[0].params.prompt);
                         setAspectRatio(history[0].params.aspectRatio || '16:9');
+                        setIsMobileResultOpen(true);
                       }}
                       className="w-full text-left p-3 rounded-2xl bg-[#f0f4f9] hover:bg-[#c2e7ff]/30 border border-[#e1e3e1] transition-all flex items-center justify-between gap-2"
                     >
@@ -490,6 +502,7 @@ export default function App() {
             setPrompt(item.params.prompt);
             setAspectRatio(item.params.aspectRatio || '16:9');
             setGenerationDurationMs(item.durationMs || null);
+            setIsMobileResultOpen(true);
           }
         }}
         onReusePrompt={(newPrompt, newRatio) => {
@@ -498,6 +511,55 @@ export default function App() {
         }}
         onClearHistory={handleClearHistory}
       />
+
+      {/* 5. Mobile Result & Live Monitor BottomSheet (Spécifique Mobile) */}
+      <MobileResultBottomSheet
+        isOpen={isMobileResultOpen}
+        onClose={() => setIsMobileResultOpen(false)}
+        status={taskStatus}
+        taskId={currentTaskId}
+        videoUrl={videoResultUrl}
+        prompt={prompt}
+        durationMs={generationDurationMs || elapsedMs}
+        aspectRatio={aspectRatio}
+        elapsedMs={elapsedMs}
+        progress={progress}
+        errorMessage={errorMessage}
+        retryState={retryState}
+        onRetry={handleGenerate}
+        onCancel={handleCancelGeneration}
+      />
+
+      {/* 6. Floating Action Pill on Mobile (if bottom sheet is closed but task is active or completed) */}
+      {taskStatus !== 'idle' && !isMobileResultOpen && (
+        <aside
+          aria-label="Statut mobile"
+          className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 lg:hidden w-auto max-w-[92%]"
+        >
+          <button
+            type="button"
+            onClick={() => setIsMobileResultOpen(true)}
+            className="flex items-center gap-2.5 px-5 py-3 rounded-full bg-[#001d35] hover:bg-[#003355] text-white font-semibold text-xs shadow-2xl border border-white/20 active:scale-95 transition-all whitespace-nowrap"
+          >
+            {isGenerating ? (
+              <>
+                <Sparkles className="w-4 h-4 animate-spin text-[#c2e7ff]" />
+                <span>En cours ({Math.round(elapsedMs / 1000)}s) • Voir le direct</span>
+              </>
+            ) : taskStatus === 'completed' ? (
+              <>
+                <Play className="w-4 h-4 text-[#c4eed0]" />
+                <span>Vidéo prête • Ouvrir le résultat 🎉</span>
+              </>
+            ) : (
+              <>
+                <AlertCircle className="w-4 h-4 text-[#ffdad6]" />
+                <span>Erreur de calcul • Voir détails</span>
+              </>
+            )}
+          </button>
+        </aside>
+      )}
     </div>
   );
 }
