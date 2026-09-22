@@ -19,6 +19,7 @@ interface PromptComposerProps {
   onChangePrompt: (newPrompt: string) => void;
   onSelectAspectRatio?: (ratio: '16:9' | '9:16' | '1:1') => void;
   disabled?: boolean;
+  className?: string;
 }
 
 export const PromptComposer: React.FC<PromptComposerProps> = ({
@@ -26,6 +27,7 @@ export const PromptComposer: React.FC<PromptComposerProps> = ({
   onChangePrompt,
   onSelectAspectRatio,
   disabled = false,
+  className = '',
 }) => {
   const [showFormulaGuide, setShowFormulaGuide] = useState(false);
   const [activeCategoryTab, setActiveCategoryTab] = useState('cinematic');
@@ -50,7 +52,7 @@ export const PromptComposer: React.FC<PromptComposerProps> = ({
     PROMPT_CATEGORIES.find((c) => c.id === activeCategoryTab) || PROMPT_CATEGORIES[0];
 
   return (
-    <div className="bg-white rounded-3xl p-5 sm:p-7 shadow-sm border border-[#e1e3e1]/80 space-y-4 transition-all">
+    <div className={`bg-white rounded-3xl p-5 sm:p-7 shadow-sm border border-[#e1e3e1]/80 space-y-4 transition-all flex flex-col ${className}`}>
       {/* Header bar */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
