@@ -12,6 +12,10 @@ interface MobileResultBottomSheetProps {
   prompt: string;
   durationMs?: number | null;
   aspectRatio: '16:9' | '9:16' | '1:1';
+  imageUrl?: string;
+  model?: string;
+  durationSeconds?: number;
+  resolution?: '720p' | '1080p' | '2k';
   elapsedMs: number;
   progress?: number;
   errorMessage?: string | null;
@@ -34,6 +38,10 @@ export const MobileResultBottomSheet: React.FC<MobileResultBottomSheetProps> = (
   prompt,
   durationMs,
   aspectRatio,
+  imageUrl,
+  model,
+  durationSeconds,
+  resolution,
   elapsedMs,
   progress,
   errorMessage,
@@ -186,6 +194,12 @@ export const MobileResultBottomSheet: React.FC<MobileResultBottomSheetProps> = (
               retryState={retryState}
               progress={progress}
               error={errorMessage || undefined}
+              aspectRatio={aspectRatio}
+              imageUrl={imageUrl}
+              model={model}
+              durationSeconds={durationSeconds}
+              resolution={resolution}
+              prompt={prompt}
               onRetry={onRetry}
               onCancel={onCancel}
             />
@@ -198,6 +212,12 @@ export const MobileResultBottomSheet: React.FC<MobileResultBottomSheetProps> = (
               status="failed"
               elapsedMs={elapsedMs}
               error={errorMessage || undefined}
+              aspectRatio={aspectRatio}
+              imageUrl={imageUrl}
+              model={model}
+              durationSeconds={durationSeconds}
+              resolution={resolution}
+              prompt={prompt}
               onRetry={onRetry}
               onCancel={onCancel}
             />

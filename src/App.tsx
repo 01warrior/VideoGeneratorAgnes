@@ -498,6 +498,12 @@ export default function App() {
                 retryState={retryState}
                 progress={progress}
                 error={errorMessage || undefined}
+                aspectRatio={aspectRatio}
+                imageUrl={imageUrl}
+                model={selectedModel}
+                durationSeconds={durationSeconds}
+                resolution={resolution}
+                prompt={prompt}
                 onRetry={handleGenerate}
                 onCancel={handleCancelGeneration}
               />
@@ -510,6 +516,12 @@ export default function App() {
                 status="failed"
                 elapsedMs={elapsedMs}
                 error={errorMessage || undefined}
+                aspectRatio={aspectRatio}
+                imageUrl={imageUrl}
+                model={selectedModel}
+                durationSeconds={durationSeconds}
+                resolution={resolution}
+                prompt={prompt}
                 onRetry={handleGenerate}
                 onCancel={handleCancelGeneration}
               />
@@ -704,6 +716,10 @@ export default function App() {
           prompt={prompt}
           durationMs={generationDurationMs || elapsedMs}
           aspectRatio={aspectRatio}
+          imageUrl={imageUrl}
+          model={selectedModel}
+          durationSeconds={durationSeconds}
+          resolution={resolution}
           elapsedMs={elapsedMs}
           progress={progress}
           errorMessage={errorMessage}

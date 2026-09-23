@@ -21,3 +21,102 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Gemini Generative Aurora Animations */
+@keyframes aurora-1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 0.75;
+  }
+  33% {
+    transform: translate(40px, -50px) scale(1.25) rotate(45deg);
+    opacity: 0.95;
+  }
+  66% {
+    transform: translate(-30px, 35px) scale(0.9) rotate(-30deg);
+    opacity: 0.65;
+  }
+}
+
+@keyframes aurora-2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1.15) rotate(0deg);
+    opacity: 0.65;
+  }
+  33% {
+    transform: translate(-45px, 35px) scale(0.85) rotate(-40deg);
+    opacity: 0.9;
+  }
+  66% {
+    transform: translate(35px, -30px) scale(1.3) rotate(35deg);
+    opacity: 0.75;
+  }
+}
+
+@keyframes aurora-3 {
+  0%, 100% {
+    transform: translate(0, 0) scale(0.9) rotate(0deg);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translate(25px, 40px) scale(1.2) rotate(60deg);
+    opacity: 0.85;
+  }
+}
+
+@keyframes scan-beam {
+  0% {
+    transform: translateY(-120%);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.6;
+  }
+  85% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(220%);
+    opacity: 0;
+  }
+}
+
+@keyframes gemini-pulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.55)) drop-shadow(0 0 40px rgba(192, 132, 252, 0.4));
+  }
+  50% {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 35px rgba(56, 189, 248, 0.85)) drop-shadow(0 0 60px rgba(236, 72, 153, 0.6));
+  }
+}
+
+@keyframes gemini-spin-slow {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-aurora-1 {
+  animation: aurora-1 9s ease-in-out infinite;
+}
+.animate-aurora-2 {
+  animation: aurora-2 11s ease-in-out infinite;
+}
+.animate-aurora-3 {
+  animation: aurora-3 8s ease-in-out infinite;
+}
+.animate-scan-beam {
+  animation: scan-beam 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.animate-gemini-pulse {
+  animation: gemini-pulse 3.5s ease-in-out infinite;
+}
+.animate-gemini-spin-slow {
+  animation: gemini-spin-slow 22s linear infinite;
+}
+
