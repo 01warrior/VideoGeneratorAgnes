@@ -72,6 +72,20 @@ export default function App() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isMobileResultOpen, setIsMobileResultOpen] = useState(false);
 
+  // Responsive desktop detection (to prevent mounting hidden background video players on mobile)
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return window.matchMedia('(min-width: 1024px)').matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mediaQuery = window.matchMedia('(min-width: 1024px)');
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
   // Active polling reference
   const pollingServiceRef = useRef<VideoPollingService | null>(null);
 
@@ -304,49 +318,43 @@ export default function App() {
           {/* RIGHT COLUMN: Output, Live Monitor & Showcase (Cols 8-12) */}
           <section className="lg:col-span-5 flex flex-col space-y-6">
             {/* Live Monitoring state (Desktop uniquement - Mobile géré par le BottomSheet) */}
-            {isGenerating && currentTaskId && (
-              <div className="hidden lg:block">
-                <VideoMonitor
-                  taskId={currentTaskId}
-                  status={taskStatus}
-                  elapsedMs={elapsedMs}
-                  retryState={retryState}
-                  progress={progress}
-                  error={errorMessage || undefined}
-                  onRetry={handleGenerate}
-                  onCancel={handleCancelGeneration}
-                />
-              </div>
+            {isDesktop && isGenerating && currentTaskId && (
+              <VideoMonitor
+                taskId={currentTaskId}
+                status={taskStatus}
+                elapsedMs={elapsedMs}
+                retryState={retryState}
+                progress={progress}
+                error={errorMessage || undefined}
+                onRetry={handleGenerate}
+                onCancel={handleCancelGeneration}
+              />
             )}
 
             {/* Error State Banner (Desktop uniquement - Mobile géré par le BottomSheet) */}
-            {taskStatus === 'failed' && currentTaskId && (
-              <div className="hidden lg:block">
-                <VideoMonitor
-                  taskId={currentTaskId}
-                  status="failed"
-                  elapsedMs={elapsedMs}
-                  error={errorMessage || undefined}
-                  onRetry={handleGenerate}
-                  onCancel={handleCancelGeneration}
-                />
-              </div>
+            {isDesktop && taskStatus === 'failed' && currentTaskId && (
+              <VideoMonitor
+                taskId={currentTaskId}
+                status="failed"
+                elapsedMs={elapsedMs}
+                error={errorMessage || undefined}
+                onRetry={handleGenerate}
+                onCancel={handleCancelGeneration}
+              />
             )}
 
-            {/* Completed HTML5 Video Player (Desktop uniquement - Mobile géré par le BottomSheet) */}
-            {taskStatus === 'completed' && videoResultUrl && (
-              <div className="hidden lg:block">
-                <VideoPlayer
-                  videoUrl={videoResultUrl}
-                  prompt={prompt}
-                  durationMs={generationDurationMs || elapsedMs}
-                  aspectRatio={aspectRatio}
-                />
-              </div>
+            {/* Completed HTML5 Video Player (Monté UNIQUEMENT sur Desktop pour éviter tout son/vidéo fantôme en arrière-plan) */}
+            {isDesktop && taskStatus === 'completed' && videoResultUrl && (
+              <VideoPlayer
+                videoUrl={videoResultUrl}
+                prompt={prompt}
+                durationMs={generationDurationMs || elapsedMs}
+                aspectRatio={aspectRatio}
+              />
             )}
 
             {/* Idle Welcome / Showcase Card */}
-            {taskStatus === 'idle' && (
+            {((isDesktop && taskStatus === 'idle') || !isDesktop) && (
               <div className="bg-white rounded-3xl p-6 sm:p-7 shadow-sm border border-[#e1e3e1]/80 space-y-5 flex-1 flex flex-col justify-between">
                 <div className="space-y-4">
                   {/* Image d'illustration Agnes AI */}

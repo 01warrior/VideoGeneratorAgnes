@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Download, Copy, Check, Play, Pause, RotateCcw, ExternalLink, Sparkles } from 'lucide-react';
 
 interface VideoPlayerProps {
@@ -18,6 +18,17 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [isPlaying, setIsPlaying] = useState(true);
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [copiedPrompt, setCopiedPrompt] = useState(false);
+
+  // Clean up and pause video whenever component is unmounted
+  useEffect(() => {
+    return () => {
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.removeAttribute('src');
+        videoRef.current.load();
+      }
+    };
+  }, []);
 
   const togglePlay = () => {
     if (!videoRef.current) return;
