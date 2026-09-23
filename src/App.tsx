@@ -42,7 +42,9 @@ export default function App() {
   const [prompt, setPrompt] = useState<string>(DEFAULT_PROMPT);
   const [imageUrl, setImageUrl] = useState<string>('');
   const [aspectRatio, setAspectRatio] = useState<'16:9' | '9:16' | '1:1'>('16:9');
-  const [selectedModel, setSelectedModel] = useState<'agnes-video-2.5' | 'agnes-video-2.5-flash'>('agnes-video-2.5');
+  const [selectedModel, setSelectedModel] = useState<
+    'agnes-video-2.5' | 'agnes-video-2.5-flash' | 'agnes-video-v2.0'
+  >('agnes-video-2.5');
   const [durationSeconds, setDurationSeconds] = useState<number>(5);
   const [resolution, setResolution] = useState<'720p' | '1080p' | '2k'>('720p');
 
@@ -84,7 +86,12 @@ export default function App() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const mediaQuery = window.matchMedia('(min-width: 1024px)');
-    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    const handler = (e: MediaQueryListEvent) => {
+      setIsDesktop(e.matches);
+      if (e.matches) {
+        setIsMobileResultOpen(false);
+      }
+    };
     mediaQuery.addEventListener('change', handler);
     return () => mediaQuery.removeEventListener('change', handler);
   }, []);
@@ -139,6 +146,153 @@ export default function App() {
     });
   };
 
+  // Shared Polling Engine (Used for new generation, reload recovery, and history resume)
+  const attachPollingService = (
+    taskId: string,
+    effectiveKey: string,
+    historyId: string,
+    startedAt: number
+  ) => {
+    pollingServiceRef.current?.stop();
+
+    const providerInstance = videoProviderFactory.getProvider('agnes');
+    const poller = new VideoPollingService(
+      taskId,
+      providerInstance,
+      effectiveKey,
+      {
+        onStatusUpdate: (result, elapsed) => {
+          setTaskStatus(result.status);
+          setElapsedMs(elapsed);
+          if (typeof result.progress === 'number') {
+            setProgress(result.progress);
+          }
+          updateHistoryStatus(historyId, result.status);
+        },
+        onSuccess: (videoUrl, elapsed) => {
+          setTaskStatus('completed');
+          setVideoResultUrl(videoUrl);
+          setGenerationDurationMs(elapsed);
+          if (!isDesktop) {
+            setIsMobileResultOpen(true);
+          }
+          updateHistoryStatus(historyId, 'completed', videoUrl, undefined, elapsed);
+          localStorage.removeItem('agnes_active_generation');
+        },
+        onError: (errorText, elapsed) => {
+          setTaskStatus('failed');
+          setErrorMessage(errorText);
+          setGenerationDurationMs(elapsed);
+          updateHistoryStatus(historyId, 'failed', undefined, errorText, elapsed);
+          localStorage.removeItem('agnes_active_generation');
+        },
+        onRetry: (attempt, maxAttempts, nextDelayMs, error) => {
+          setRetryState({ attempt, maxAttempts, nextDelayMs, error });
+        },
+        onTick: (elapsed) => {
+          setElapsedMs(elapsed);
+        },
+      },
+      {
+        initialIntervalMs: 6000,
+        maxIntervalMs: 15000,
+        intervalStepMs: 1500,
+        maxRetries: 5,
+        globalTimeoutMs: 15 * 60 * 1000,
+        initialStartTime: startedAt,
+      }
+    );
+
+    pollingServiceRef.current = poller;
+    poller.start();
+  };
+
+  // Restore Active Generation after page reload & Clean up expired pending records
+  useEffect(() => {
+    try {
+      const now = Date.now();
+
+      // 1. Clean up stale tasks in history that were left pending for > 20 minutes
+      setHistory((prev) => {
+        let modified = false;
+        const cleaned = prev.map((item) => {
+          if (
+            (item.status === 'pending' || item.status === 'processing') &&
+            now - item.createdAt > 20 * 60 * 1000
+          ) {
+            modified = true;
+            return {
+              ...item,
+              status: 'failed' as const,
+              error: 'Session interrompue ou délai dépassé',
+              completedAt: now,
+            };
+          }
+          return item;
+        });
+        if (modified) {
+          localStorage.setItem('agnes_video_history', JSON.stringify(cleaned));
+        }
+        return cleaned;
+      });
+
+      // 2. Check active generation in progress
+      const rawActive = localStorage.getItem('agnes_active_generation');
+      if (!rawActive) return;
+
+      const active = JSON.parse(rawActive) as {
+        historyId: string;
+        taskId: string;
+        params: VideoGenerationParams;
+        effectiveKey: string;
+        startedAt: number;
+      };
+
+      const age = now - (active.startedAt || 0);
+
+      // If active task is > 15 minutes, expire it
+      if (age >= 15 * 60 * 1000) {
+        localStorage.removeItem('agnes_active_generation');
+        updateHistoryStatus(
+          active.historyId,
+          'failed',
+          undefined,
+          "Délai d'attente dépassé après rafraîchissement (15 min)"
+        );
+        return;
+      }
+
+      // Resume state smoothly
+      setCurrentTaskId(active.taskId);
+      setTaskStatus('processing');
+      setElapsedMs(age);
+
+      if (active.params) {
+        if (active.params.prompt) setPrompt(active.params.prompt);
+        if (active.params.aspectRatio) setAspectRatio(active.params.aspectRatio);
+        if (active.params.model) setSelectedModel(active.params.model);
+        if (active.params.durationSeconds) setDurationSeconds(active.params.durationSeconds);
+        if (active.params.resolution) setResolution(active.params.resolution);
+      }
+
+      // Only open mobile result sheet if actually on mobile
+      if (!window.matchMedia('(min-width: 1024px)').matches) {
+        setIsMobileResultOpen(true);
+      }
+
+      // Resume polling
+      attachPollingService(
+        active.taskId,
+        active.effectiveKey || '',
+        active.historyId,
+        active.startedAt
+      );
+    } catch (err) {
+      console.warn('Could not restore in-progress generation:', err);
+      localStorage.removeItem('agnes_active_generation');
+    }
+  }, []);
+
   // Launch Video Generation (supports optional useServerKey flag)
   const handleGenerate = async (options?: { useServerKey?: boolean }) => {
     if (!prompt.trim()) return;
@@ -171,12 +325,19 @@ export default function App() {
     setProgress(undefined);
     setElapsedMs(0);
     setRetryState(null);
-    setIsMobileResultOpen(true);
+
+    // Open bottom sheet ONLY on mobile device
+    if (!isDesktop) {
+      setIsMobileResultOpen(true);
+    } else {
+      setIsMobileResultOpen(false);
+    }
 
     const historyId = 'gen_' + Date.now();
+    const startedAt = Date.now();
 
     try {
-      // 1. Create task via Provider Adapter (server proxy uses AGNES_API_KEY when key is empty)
+      // 1. Create task via Provider Adapter
       const taskId = await providerInstance.createTask(params, effectiveKey);
       setCurrentTaskId(taskId);
 
@@ -186,56 +347,26 @@ export default function App() {
         provider: 'agnes',
         params,
         status: 'pending',
-        createdAt: Date.now(),
+        createdAt: startedAt,
       };
       saveHistoryItem(historyRecord);
 
-      // 2. Launch Polling Service
-      const poller = new VideoPollingService(
-        taskId,
-        providerInstance,
-        effectiveKey,
-        {
-          onStatusUpdate: (result, elapsed) => {
-            setTaskStatus(result.status);
-            setElapsedMs(elapsed);
-            if (typeof result.progress === 'number') {
-              setProgress(result.progress);
-            }
-            updateHistoryStatus(historyId, result.status);
-          },
-          onSuccess: (videoUrl, elapsed) => {
-            setTaskStatus('completed');
-            setVideoResultUrl(videoUrl);
-            setGenerationDurationMs(elapsed);
-            setIsMobileResultOpen(true);
-            updateHistoryStatus(historyId, 'completed', videoUrl, undefined, elapsed);
-          },
-          onError: (errorText, elapsed) => {
-            setTaskStatus('failed');
-            setErrorMessage(errorText);
-            setGenerationDurationMs(elapsed);
-            updateHistoryStatus(historyId, 'failed', undefined, errorText, elapsed);
-          },
-          onRetry: (attempt, maxAttempts, nextDelayMs, error) => {
-            setRetryState({ attempt, maxAttempts, nextDelayMs, error });
-          },
-          onTick: (elapsed) => {
-            setElapsedMs(elapsed);
-          },
-        },
-        {
-          initialIntervalMs: 6000,
-          maxIntervalMs: 15000,
-          intervalStepMs: 1500,
-          maxRetries: 5,
-          globalTimeoutMs: 15 * 60 * 1000,
-        }
+      // Persist active generation so reloading never leaves a task abandoned
+      localStorage.setItem(
+        'agnes_active_generation',
+        JSON.stringify({
+          historyId,
+          taskId,
+          params,
+          effectiveKey,
+          startedAt,
+        })
       );
 
-      pollingServiceRef.current = poller;
-      poller.start();
+      // 2. Launch Polling Service
+      attachPollingService(taskId, effectiveKey, historyId, startedAt);
     } catch (err: unknown) {
+      localStorage.removeItem('agnes_active_generation');
       const msg = err instanceof Error ? err.message : 'Erreur inconnue lors du démarrage';
       setTaskStatus('failed');
       setErrorMessage(msg);
@@ -245,15 +376,45 @@ export default function App() {
 
   const handleCancelGeneration = () => {
     pollingServiceRef.current?.stop();
+    localStorage.removeItem('agnes_active_generation');
+    if (currentTaskId) {
+      const item = history.find((h) => h.taskId === currentTaskId);
+      if (item) {
+        updateHistoryStatus(item.id, 'failed', undefined, 'Génération annulée par l’utilisateur');
+      }
+    }
     setTaskStatus('idle');
     setCurrentTaskId(null);
     setRetryState(null);
     setIsMobileResultOpen(false);
   };
 
+  const handleResumeTask = (item: GenerationHistoryItem) => {
+    if (!item.taskId) return;
+    setCurrentTaskId(item.taskId);
+    setTaskStatus(item.status);
+    setPrompt(item.params.prompt);
+    if (item.params.aspectRatio) setAspectRatio(item.params.aspectRatio);
+    if (item.params.model) setSelectedModel(item.params.model);
+    if (item.params.durationSeconds) setDurationSeconds(item.params.durationSeconds);
+    if (item.params.resolution) setResolution(item.params.resolution);
+
+    if (!isDesktop) {
+      setIsMobileResultOpen(true);
+    }
+
+    const startedAt = item.createdAt || Date.now();
+    const age = Math.max(0, Date.now() - startedAt);
+    setElapsedMs(age);
+
+    const effectiveKey = apiKey.trim();
+    attachPollingService(item.taskId, effectiveKey, item.id, startedAt);
+  };
+
   const handleClearHistory = () => {
     setHistory([]);
     localStorage.removeItem('agnes_video_history');
+    localStorage.removeItem('agnes_active_generation');
   };
 
   const isGenerating = taskStatus === 'pending' || taskStatus === 'processing';
@@ -512,6 +673,7 @@ export default function App() {
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
         history={history}
+        onResumeTask={handleResumeTask}
         onSelectVideo={(item) => {
           if (item.videoUrl) {
             setVideoResultUrl(item.videoUrl);
@@ -519,7 +681,9 @@ export default function App() {
             setPrompt(item.params.prompt);
             setAspectRatio(item.params.aspectRatio || '16:9');
             setGenerationDurationMs(item.durationMs || null);
-            setIsMobileResultOpen(true);
+            if (!isDesktop) {
+              setIsMobileResultOpen(true);
+            }
           }
         }}
         onReusePrompt={(newPrompt, newRatio) => {
@@ -529,26 +693,28 @@ export default function App() {
         onClearHistory={handleClearHistory}
       />
 
-      {/* 5. Mobile Result & Live Monitor BottomSheet (Spécifique Mobile) */}
-      <MobileResultBottomSheet
-        isOpen={isMobileResultOpen}
-        onClose={() => setIsMobileResultOpen(false)}
-        status={taskStatus}
-        taskId={currentTaskId}
-        videoUrl={videoResultUrl}
-        prompt={prompt}
-        durationMs={generationDurationMs || elapsedMs}
-        aspectRatio={aspectRatio}
-        elapsedMs={elapsedMs}
-        progress={progress}
-        errorMessage={errorMessage}
-        retryState={retryState}
-        onRetry={handleGenerate}
-        onCancel={handleCancelGeneration}
-      />
+      {/* 5. Mobile Result & Live Monitor BottomSheet (Monté STRICTEMENT sur Mobile pour protéger à 100% le scroll PC) */}
+      {!isDesktop && (
+        <MobileResultBottomSheet
+          isOpen={isMobileResultOpen}
+          onClose={() => setIsMobileResultOpen(false)}
+          status={taskStatus}
+          taskId={currentTaskId}
+          videoUrl={videoResultUrl}
+          prompt={prompt}
+          durationMs={generationDurationMs || elapsedMs}
+          aspectRatio={aspectRatio}
+          elapsedMs={elapsedMs}
+          progress={progress}
+          errorMessage={errorMessage}
+          retryState={retryState}
+          onRetry={handleGenerate}
+          onCancel={handleCancelGeneration}
+        />
+      )}
 
       {/* 6. Floating Action Pill on Mobile (if bottom sheet is closed but task is active or completed) */}
-      {taskStatus !== 'idle' && !isMobileResultOpen && (
+      {!isDesktop && taskStatus !== 'idle' && !isMobileResultOpen && (
         <aside
           aria-label="Statut mobile"
           className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 lg:hidden w-auto max-w-[92%]"

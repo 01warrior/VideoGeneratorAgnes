@@ -9,6 +9,7 @@ interface HistoryDrawerProps {
   onSelectVideo: (item: GenerationHistoryItem) => void;
   onReusePrompt: (prompt: string, aspectRatio?: '16:9' | '9:16' | '1:1') => void;
   onClearHistory: () => void;
+  onResumeTask?: (item: GenerationHistoryItem) => void;
 }
 
 export const HistoryDrawer: React.FC<HistoryDrawerProps> = ({
@@ -18,6 +19,7 @@ export const HistoryDrawer: React.FC<HistoryDrawerProps> = ({
   onSelectVideo,
   onReusePrompt,
   onClearHistory,
+  onResumeTask,
 }) => {
   if (!isOpen) return null;
 
@@ -103,7 +105,21 @@ export const HistoryDrawer: React.FC<HistoryDrawerProps> = ({
                     Réutiliser prompt
                   </button>
 
-                  {item.videoUrl && (
+                  {(item.status === 'pending' || item.status === 'processing') && onResumeTask && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onResumeTask(item);
+                        onClose();
+                      }}
+                      className="px-2.5 py-1 rounded-full bg-[#00639b] text-white text-[11px] font-semibold hover:bg-[#004a77] transition-all shadow-xs flex items-center gap-1"
+                    >
+                      <Sparkles className="w-3 h-3 animate-spin" />
+                      <span>Suivre en direct</span>
+                    </button>
+                  )}
+
+                  {item.videoUrl && item.status === 'completed' && (
                     <div className="flex items-center gap-1.5">
                       <button
                         type="button"

@@ -20,8 +20,8 @@ interface GenerationSettingsProps {
   onSelectAspectRatio: (ratio: '16:9' | '9:16' | '1:1') => void;
   imageUrl: string;
   onChangeImageUrl: (url: string) => void;
-  selectedModel?: 'agnes-video-2.5' | 'agnes-video-2.5-flash';
-  onSelectModel?: (model: 'agnes-video-2.5' | 'agnes-video-2.5-flash') => void;
+  selectedModel?: 'agnes-video-2.5' | 'agnes-video-2.5-flash' | 'agnes-video-v2.0';
+  onSelectModel?: (model: 'agnes-video-2.5' | 'agnes-video-2.5-flash' | 'agnes-video-v2.0') => void;
   durationSeconds?: number;
   onChangeDuration?: (secs: number) => void;
   resolution?: '720p' | '1080p' | '2k';

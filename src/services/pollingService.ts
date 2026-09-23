@@ -14,6 +14,7 @@ export interface PollingOptions {
   intervalStepMs?: number; // 1500ms
   maxRetries?: number; // 5 retries on transient errors
   globalTimeoutMs?: number; // 15 minutes (900000ms)
+  initialStartTime?: number; // Timestamp when task was originally started
 }
 
 export class VideoPollingService {
@@ -21,7 +22,7 @@ export class VideoPollingService {
   private provider: IVideoProvider;
   private apiKey: string;
   private callbacks: PollingCallbacks;
-  private options: Required<PollingOptions>;
+  private options: Required<Omit<PollingOptions, 'initialStartTime'>> & { initialStartTime?: number };
 
   private isRunning: boolean = false;
   private startTime: number = 0;
@@ -48,6 +49,7 @@ export class VideoPollingService {
       intervalStepMs: options?.intervalStepMs ?? 1500, // +1.5s per poll
       maxRetries: options?.maxRetries ?? 5, // 5 retries
       globalTimeoutMs: options?.globalTimeoutMs ?? 15 * 60 * 1000, // 15 minutes
+      initialStartTime: options?.initialStartTime,
     };
 
     this.currentInterval = this.options.initialIntervalMs;
@@ -57,7 +59,7 @@ export class VideoPollingService {
     if (this.isRunning) return;
 
     this.isRunning = true;
-    this.startTime = Date.now();
+    this.startTime = this.options.initialStartTime || Date.now();
     this.consecutiveErrors = 0;
     this.currentInterval = this.options.initialIntervalMs;
 
