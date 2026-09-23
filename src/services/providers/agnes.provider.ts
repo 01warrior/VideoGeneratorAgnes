@@ -2,8 +2,8 @@ import { IVideoProvider, VideoGenerationParams, VideoTaskResult } from '../../ty
 
 export class AgnesVideoProvider implements IVideoProvider {
   public readonly name = 'agnes';
-  public readonly displayName = 'Agnes AI (agnes-video-v2.0)';
-  public readonly description = 'Moteur haute fidélité Agnes v2.0 (121 frames @ 24fps) avec rendu cinématique.';
+  public readonly displayName = 'Agnes AI (agnes-video-2.5)';
+  public readonly description = 'Moteur haute fidélité Agnes Video 2.5 (série 2.5 / 2.5-flash) avec rendu cinématique et cohérence spatio-temporelle avancée.';
 
   /**
    * Normalisation stricte des dimensions selon le ratio demandé:
@@ -29,17 +29,23 @@ export class AgnesVideoProvider implements IVideoProvider {
    */
   public async createTask(params: VideoGenerationParams, apiKey: string): Promise<string> {
     const { width, height } = this.getNormalizedDimensions(params.aspectRatio);
+    const duration = typeof params.durationSeconds === 'number' ? params.durationSeconds : 5;
+    const model = params.model || 'agnes-video-2.5';
+    const resolution = params.resolution || '720p';
 
     const payload = {
       provider: this.name,
       apiKey: apiKey?.trim() || undefined,
       params: {
+        model,
         prompt: params.prompt,
         imageUrl: params.imageUrl?.trim() || undefined,
         aspectRatio: params.aspectRatio || '16:9',
+        durationSeconds: duration,
+        resolution,
         width,
         height,
-        num_frames: 121,
+        num_frames: Math.min(Math.round(duration * 24), 288),
         frame_rate: 24,
       },
     };

@@ -42,6 +42,9 @@ export default function App() {
   const [prompt, setPrompt] = useState<string>(DEFAULT_PROMPT);
   const [imageUrl, setImageUrl] = useState<string>('');
   const [aspectRatio, setAspectRatio] = useState<'16:9' | '9:16' | '1:1'>('16:9');
+  const [selectedModel, setSelectedModel] = useState<'agnes-video-2.5' | 'agnes-video-2.5-flash'>('agnes-video-2.5');
+  const [durationSeconds, setDurationSeconds] = useState<number>(5);
+  const [resolution, setResolution] = useState<'720p' | '1080p' | '2k'>('720p');
 
   // 4. Generation & Polling State
   const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
@@ -157,7 +160,9 @@ export default function App() {
       prompt: prompt.trim(),
       imageUrl: imageUrl.trim() || undefined,
       aspectRatio,
-      durationSeconds: 5,
+      durationSeconds,
+      model: selectedModel,
+      resolution,
     };
 
     setTaskStatus('pending');
@@ -277,7 +282,7 @@ export default function App() {
                   Clé API Agnes AI requise
                 </h3>
                 <p className="text-xs text-[#444746]">
-                  Renseignez votre clé d'API <code className="font-mono text-[#004a77]">sk-...</code> pour lancer la synthèse vidéo sur le moteur officiel agnes-video-v2.0.
+                  Renseignez votre clé d'API <code className="font-mono text-[#004a77]">sk-...</code> pour lancer la synthèse vidéo sur la nouvelle série officielle agnes-video-2.5.
                 </p>
               </div>
             </div>
@@ -311,6 +316,12 @@ export default function App() {
               onSelectAspectRatio={setAspectRatio}
               imageUrl={imageUrl}
               onChangeImageUrl={setImageUrl}
+              selectedModel={selectedModel}
+              onSelectModel={setSelectedModel}
+              durationSeconds={durationSeconds}
+              onChangeDuration={setDurationSeconds}
+              resolution={resolution}
+              onChangeResolution={setResolution}
               disabled={isGenerating}
             />
           </section>
@@ -361,23 +372,29 @@ export default function App() {
                   <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-inner border border-[#e1e3e1]/80 bg-[#1f1f1f]">
                     <img
                       src="https://i.ytimg.com/vi/W7KVCWVTadI/maxresdefault.jpg"
-                      alt="Studio Vidéo Agnes AI v2.0"
+                      alt="Studio Vidéo Agnes AI 2.5"
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"
                       loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
-                    <span className="absolute bottom-2.5 left-3 text-[11px] font-semibold text-white/90 bg-black/60 px-2.5 py-0.5 rounded-full backdrop-blur-sm">
-                      Moteur Agnes AI 2.0
+                    <span className="absolute bottom-2.5 left-3 text-[11px] font-semibold text-white/90 bg-black/60 px-2.5 py-0.5 rounded-full backdrop-blur-sm flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-[#c2e7ff]" />
+                      Moteur Agnes Video 2.5
                     </span>
                   </div>
 
                   <div>
-                    <h3 className="text-base font-bold text-[#1f1f1f]">
-                      Studio Vidéo Agnes AI v2.0
-                    </h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-base font-bold text-[#1f1f1f]">
+                        Studio Vidéo Agnes AI 2.5
+                      </h3>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#c4eed0] text-[#072711] font-semibold">
+                        Série 2.5
+                      </span>
+                    </div>
                     <p className="text-xs text-[#444746] mt-1 leading-relaxed">
-                      Plateforme de synthèse vidéo par intelligence artificielle propulsée par le modèle officiel <strong className="text-[#1f1f1f]">agnes-video-v2.0</strong>.
+                      Plateforme de synthèse vidéo par intelligence artificielle propulsée par la nouvelle série officielle <strong className="text-[#1f1f1f]">agnes-video-2.5</strong> (+165 Elo, dynamique spatio-temporelle de pointe).
                     </p>
                   </div>
 
@@ -385,23 +402,19 @@ export default function App() {
                     <div className="flex items-start gap-2.5 text-xs text-[#444746]">
                       <CheckCircle2 className="w-4 h-4 text-[#0a6627] shrink-0 mt-0.5" />
                       <span>
-                        <strong className="text-[#1f1f1f]">Modèle agnes-video-v2.0 :</strong> Rendu de
-                        121 images consécutives à 24 images par seconde pour une fluidité naturelle.
+                        <strong className="text-[#1f1f1f]">Modèles 2.5 & 2.5-Flash :</strong> Rendu de 4 à 12 secondes avec contrôle temporel précis et physique cinématique.
                       </span>
                     </div>
                     <div className="flex items-start gap-2.5 text-xs text-[#444746]">
                       <CheckCircle2 className="w-4 h-4 text-[#0a6627] shrink-0 mt-0.5" />
                       <span>
-                        <strong className="text-[#1f1f1f]">Résolution Cinématographique :</strong> Formats
-                        16:9 (1152×768), 9:16 (768×1152) et 1:1 optimisés pour la production vidéo.
+                        <strong className="text-[#1f1f1f]">Résolutions HD / 2K :</strong> Formats 16:9, 9:16 et 1:1 adaptés à la diffusion professionnelle et aux réseaux sociaux.
                       </span>
                     </div>
                     <div className="flex items-start gap-2.5 text-xs text-[#444746]">
                       <CheckCircle2 className="w-4 h-4 text-[#0a6627] shrink-0 mt-0.5" />
                       <span>
-                        <strong className="text-[#1f1f1f]">Polling Adaptatif & Backoff :</strong>{' '}
-                        Intervalle dynamique de 6s à 15s avec reconnexion automatique en cas d'erreur
-                        réseau.
+                        <strong className="text-[#1f1f1f]">Polling Adaptatif & Backoff :</strong> Intervalle dynamique optimisé avec reconnexion automatique en cas de surcharge.
                       </span>
                     </div>
                   </div>
@@ -444,19 +457,15 @@ export default function App() {
               {/* Informations techniques en haut */}
               <div className="flex flex-wrap items-center justify-between gap-2 pb-1 border-b border-[#e1e3e1]/60">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-[#1f1f1f] text-sm">agnes-video-v2.0</span>
-                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-[#f0f4f9] text-[#004a77] font-mono font-semibold">
-                    121 frames @ 24fps
+                  <span className="font-bold text-[#1f1f1f] text-sm">{selectedModel}</span>
+                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-[#c2e7ff] text-[#004a77] font-mono font-semibold">
+                    {durationSeconds}s • {resolution.toUpperCase()}
                   </span>
                 </div>
                 <p className="text-xs text-[#444746]">
-                  Résolution normalisée :{' '}
+                  Format :{' '}
                   <span className="font-semibold text-[#1f1f1f]">
-                    {aspectRatio === '16:9'
-                      ? '1152×768 px'
-                      : aspectRatio === '9:16'
-                      ? '768×1152 px'
-                      : '768×768 px'}
+                    {aspectRatio} ({aspectRatio === '16:9' ? '1152×768' : aspectRatio === '9:16' ? '768×1152' : '768×768'})
                   </span>
                 </p>
               </div>

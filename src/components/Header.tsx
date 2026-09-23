@@ -26,7 +26,7 @@ export const Header: React.FC<HeaderProps> = ({
               Agnes Video AI
             </h1>
             <span className="text-[11px] font-semibold tracking-wide uppercase px-2 py-0.5 rounded-full bg-[#c2e7ff] text-[#001d35]">
-              v2.0
+              v2.5
             </span>
           </div>
         </div>

@@ -49,6 +49,9 @@ async function startServer() {
         let width = 1152;
         let height = 768;
         const aspectRatio = params?.aspectRatio || '16:9';
+        const model = params?.model || 'agnes-video-2.5';
+        const duration = typeof params?.durationSeconds === 'number' ? params.durationSeconds : 5;
+        const resolution = params?.resolution || '720p';
 
         if (aspectRatio === '9:16') {
           width = 768;
@@ -59,11 +62,14 @@ async function startServer() {
         }
 
         const payload: Record<string, unknown> = {
-          model: 'agnes-video-v2.0',
+          model,
           prompt: params.prompt,
+          duration,
+          aspect_ratio: aspectRatio,
+          size: resolution,
           width,
           height,
-          num_frames: 121,
+          num_frames: Math.min(Math.round(duration * 24), 288),
           frame_rate: 24,
         };
 

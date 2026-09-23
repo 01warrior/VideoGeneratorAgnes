@@ -63,7 +63,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
           <div>
             <h2 className="text-xl font-bold text-[#1f1f1f]">Clé API Agnes AI</h2>
             <p className="text-xs text-[#444746]">
-              Authentification pour le modèle agnes-video-v2.0
+              Authentification pour la série de modèles agnes-video-2.5
             </p>
           </div>
         </div>

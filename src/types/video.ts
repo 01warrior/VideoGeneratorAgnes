@@ -3,6 +3,8 @@ export interface VideoGenerationParams {
   imageUrl?: string;
   aspectRatio?: '16:9' | '9:16' | '1:1';
   durationSeconds?: number;
+  model?: 'agnes-video-2.5' | 'agnes-video-2.5-flash' | 'agnes-video-v2.0';
+  resolution?: '720p' | '1080p' | '2k';
 }
 
 export interface VideoTaskResult {
