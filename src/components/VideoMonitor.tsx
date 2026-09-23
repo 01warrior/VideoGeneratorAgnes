@@ -211,23 +211,14 @@ export const VideoMonitor: React.FC<VideoMonitorProps> = ({
               </div>
             </div>
 
-            {/* Center Generative Icon & Synthesis Indicator */}
-            <div className="relative z-10 flex flex-col items-center justify-center text-center my-auto py-2 space-y-3">
-              {/* Glowing Gemini Star Core */}
-              <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center">
-                {/* Rotating multi-color halo */}
-                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#06b6d4] via-[#a855f7] to-[#ec4899] animate-gemini-spin-slow opacity-70 filter blur-sm" />
-                <div className="absolute inset-1 rounded-2xl bg-[#080d1a]/80 backdrop-blur-md border border-white/20 flex items-center justify-center animate-gemini-pulse shadow-2xl">
-                  <Sparkles className="w-7 h-7 sm:w-8 sm:h-8 text-white fill-white/10" />
-                </div>
-              </div>
-
+            {/* Center Synthesis Indicator (Épuré avec le texte uniquement) */}
+            <div className="relative z-10 flex flex-col items-center justify-center text-center my-auto py-4 space-y-2">
               {/* Dynamic Stage Info */}
-              <div className="space-y-1 max-w-[90%]">
-                <h4 className="text-xs sm:text-sm font-bold text-white tracking-wide drop-shadow-md">
+              <div className="space-y-1.5 max-w-[85%]">
+                <h4 className="text-sm sm:text-base font-bold text-white tracking-wide drop-shadow-md">
                   {stage.title}
                 </h4>
-                <p className="text-[10px] sm:text-[11px] text-white/70 leading-tight">
+                <p className="text-xs text-white/75 leading-relaxed font-normal">
                   {stage.subtitle}
                 </p>
               </div>
