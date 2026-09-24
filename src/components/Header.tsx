@@ -23,7 +23,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-lg font-bold tracking-tight text-[#1f1f1f]">
-              Agnes Video AI
+              VAI
             </h1>
             <span className="text-[11px] font-semibold tracking-wide uppercase px-2 py-0.5 rounded-full bg-[#c2e7ff] text-[#001d35]">
               v2.5
@@ -52,7 +52,7 @@ export const Header: React.FC<HeaderProps> = ({
             ) : (
               <span className="flex items-center gap-1">
                 <AlertCircle className="w-3 h-3 text-[#ba1a1a]" />
-                <span>Renseigner ma clé API</span>
+                <span>ma clé API</span>
               </span>
             )}
           </button>

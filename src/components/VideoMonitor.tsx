@@ -154,7 +154,7 @@ export const VideoMonitor: React.FC<VideoMonitorProps> = ({
       {!isFailed ? (
         <div className="relative flex justify-center items-center py-1">
           <div
-            className={`relative rounded-3xl overflow-hidden shadow-2xl border border-white/20 transition-all duration-500 bg-[#070b14] flex flex-col justify-between p-4 sm:p-5 select-none ${getRatioClasses()}`}
+            className={`relative rounded-3xl overflow-hidden shadow-2xl border border-white/20 transition-all duration-500 bg-[#041628] flex flex-col justify-between p-4 sm:p-5 select-none ${getRatioClasses()}`}
           >
             {/* Optional Image Background if Image-to-Video mode */}
             {imageUrl && (
@@ -164,19 +164,19 @@ export const VideoMonitor: React.FC<VideoMonitorProps> = ({
               />
             )}
 
-            {/* Generative Aurora Fluid Mesh (Gemini Cosmic Shimmer) */}
+            {/* Generative Aurora Fluid Mesh (Couleur d'accent du site #00639b et Blanc lumineux - Zéro violet) */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              {/* Aurora Orb 1 (Cyan / Electric Blue) */}
-              <div className="absolute -top-1/4 -left-1/4 w-[120%] h-[120%] rounded-full bg-gradient-to-br from-[#06b6d4]/40 via-[#3b82f6]/30 to-transparent filter blur-3xl animate-aurora-1" />
+              {/* Aurora Orb 1 (Couleur d'accent du site #00639b / Bleu profond) */}
+              <div className="absolute -top-1/4 -left-1/4 w-[120%] h-[120%] rounded-full bg-gradient-to-br from-[#00639b]/65 via-[#0284c7]/40 to-transparent filter blur-3xl animate-aurora-1" />
 
-              {/* Aurora Orb 2 (Purple / Indigo / Violet) */}
-              <div className="absolute -bottom-1/4 -right-1/4 w-[120%] h-[120%] rounded-full bg-gradient-to-tl from-[#9333ea]/45 via-[#6366f1]/35 to-transparent filter blur-3xl animate-aurora-2" />
+              {/* Aurora Orb 2 (Blanc éclatant & Dégradé d'accent - Aucun violet) */}
+              <div className="absolute -bottom-1/4 -right-1/4 w-[120%] h-[120%] rounded-full bg-gradient-to-tl from-white/35 via-[#00639b]/50 to-transparent filter blur-3xl animate-aurora-2" />
 
-              {/* Aurora Orb 3 (Fuchsia / Magenta Glow) */}
-              <div className="absolute top-1/3 left-1/3 w-[80%] h-[80%] rounded-full bg-gradient-to-r from-[#ec4899]/30 to-[#8b5cf6]/25 filter blur-2xl animate-aurora-3" />
+              {/* Aurora Orb 3 (Halo Blanc pur & Lueur azur claire) */}
+              <div className="absolute top-1/4 left-1/3 w-[85%] h-[85%] rounded-full bg-gradient-to-r from-white/40 via-[#c2e7ff]/35 to-[#00639b]/30 filter blur-2xl animate-aurora-3" />
 
-              {/* Subtle Scanning Light Beam */}
-              <div className="absolute inset-x-0 h-28 bg-gradient-to-b from-transparent via-white/10 to-transparent animate-scan-beam" />
+              {/* Subtle Scanning Light Beam (Faisceau blanc pur) */}
+              <div className="absolute inset-x-0 h-32 bg-gradient-to-b from-transparent via-white/20 to-transparent animate-scan-beam" />
 
               {/* Subtle Grid & Particle Texture */}
               <div
@@ -194,7 +194,7 @@ export const VideoMonitor: React.FC<VideoMonitorProps> = ({
                 {aspectRatio === '16:9' ? (
                   <Maximize2 className="w-3 h-3 text-[#38bdf8]" />
                 ) : aspectRatio === '9:16' ? (
-                  <Smartphone className="w-3 h-3 text-[#c084fc]" />
+                  <Smartphone className="w-3 h-3 text-[#c2e7ff]" />
                 ) : (
                   <Square className="w-3 h-3 text-[#34d399]" />
                 )}
